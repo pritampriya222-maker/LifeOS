@@ -310,7 +310,7 @@ const LifeOS = {
                     'Authorization': `Bearer ${API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: "llama3-70b-8192",
+                    model: "llama-3.3-70b-versatile",
                     messages: [{ role: "user", content: prompt }],
                     response_format: { type: "json_object" }
                 })
