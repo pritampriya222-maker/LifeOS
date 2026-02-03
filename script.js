@@ -301,16 +301,19 @@ const LifeOS = {
             Do not include markdown formatting like \`\`\`json. Just return the raw JSON object.
             `;
 
-            // Call Vercel Backend API (Secure Proxy)
-            const response = await fetch('/api/analyze', {
+            // Call Gemini API (Direct fetch for immediate usage)
+            const API_KEY = 'AIzaSyDtgh9EiM-vA9-F9SWNnF6Mgu9YcQNz6gg';
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
             });
 
             const data = await response.json();
 
-            if (data.error) throw new Error(data.error);
+            if (data.error) throw new Error(data.error.message);
 
             let resultText = data.candidates[0].content.parts[0].text;
 
