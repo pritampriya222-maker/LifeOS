@@ -263,8 +263,8 @@ const LifeOS = {
 
             // Construct Prompt
             const prompt = `
-            You are LifeOS, a personal intelligence agent. 
-            Analyze the following user data and current context to provide structured decision recommendations.
+            You are LifeOS, an advanced personal intelligence agent designed to provide deep, actionable insights.
+            Analyze the following user data and current context to provide comprehensive decision recommendations.
             
             USER MEMORY:
             ${memoryDump}
@@ -275,31 +275,81 @@ const LifeOS = {
             Valid Categories: 'habits', 'preferences', 'decisions', 'goals', 'constraints'.
             
             INSTRUCTIONS:
-            1. Identify patterns in the user's behavior based on the memory.
-            2. Detect conflicts between habits, goals, and constraints.
-            3. Generate 1-3 actionable recommendations to solve the context problem or improve life quality.
-            4. Each recommendation must have a title, specific action, reasoning (list of strings), trade-offs (list of strings), and priority (high/medium/low).
-            5. Provide the category of the recommendation (e.g., 'alignment', 'optimization', 'health', 'productivity').
+            1. DEEP PATTERN ANALYSIS: Identify patterns, correlations, and conflicts in the user's behavior. Look for:
+               - Time-based patterns (chronotype, productivity windows)
+               - Goal-habit alignment or misalignment
+               - Constraint conflicts with goals
+               - Preference consistency or contradictions
+               - Decision-making patterns and outcomes
+            
+            2. COMPREHENSIVE REMARKS: Provide detailed observations about the user's current state:
+               - Overall life balance assessment
+               - Strengths and positive patterns to maintain
+               - Areas of concern or potential improvement
+               - Hidden conflicts or opportunities
+               - Long-term trajectory based on current patterns
+            
+            3. ACTIONABLE RECOMMENDATIONS: Generate 2-4 detailed, personalized recommendations that:
+               - Address the specific context/problem provided
+               - Are grounded in the user's actual data
+               - Include step-by-step implementation guidance
+               - Consider the user's constraints and preferences
+               - Provide realistic timelines and success metrics
+            
+            4. Each recommendation MUST include:
+               - title: Clear, compelling title
+               - action: Detailed, specific action steps (2-3 sentences minimum)
+               - category: Type of recommendation (alignment/optimization/health/productivity/constraint_management)
+               - priority: high/medium/low based on impact and urgency
+               - reasoning: List of 3-5 detailed points explaining WHY this recommendation matters
+               - tradeOffs: List of 2-4 realistic trade-offs or challenges to consider
+               - evidence: Specific data points from user's memory that support this recommendation
+               - expectedOutcome: What success looks like (1-2 sentences)
+               - timeline: Suggested implementation timeframe
+            
+            5. OVERALL REMARKS: Provide a holistic assessment including:
+               - Current state summary
+               - Key insights from the data
+               - Overall recommendations for life optimization
             
             OUTPUT FORMAT (JSON ONLY):
             {
+                "overallRemarks": {
+                    "summary": "2-3 sentence overview of user's current state",
+                    "strengths": ["strength 1", "strength 2"],
+                    "concerns": ["concern 1", "concern 2"],
+                    "keyInsights": ["insight 1", "insight 2"]
+                },
                 "patterns": [
-                    {"type": "conflict|correlation|insight", "description": "...", "evidence": ["..."]}
+                    {
+                        "type": "conflict|correlation|insight|chronotype|preference_profile",
+                        "description": "Detailed description of the pattern (2-3 sentences)",
+                        "evidence": ["specific data point 1", "specific data point 2"],
+                        "significance": "Why this pattern matters"
+                    }
                 ],
                 "recommendations": [
                     {
                         "title": "...",
-                        "action": "...",
+                        "action": "Detailed action steps (2-3 sentences minimum)",
                         "category": "...",
                         "priority": "high|medium|low",
-                        "reasoning": ["..."],
-                        "tradeOffs": ["..."],
-                        "evidence": ["..."]
+                        "reasoning": ["detailed reason 1", "detailed reason 2", "detailed reason 3"],
+                        "tradeOffs": ["trade-off 1", "trade-off 2"],
+                        "evidence": ["data point 1", "data point 2"],
+                        "expectedOutcome": "What success looks like",
+                        "timeline": "Suggested timeframe for implementation"
                     }
                 ]
             }
-            Do not include markdown formatting like \`\`\`json. Just return the raw JSON object.
+            
+            IMPORTANT: 
+            - Be specific and reference actual user data
+            - Provide actionable, not generic advice
+            - Be thorough - this is a comprehensive analysis, not a quick summary
+            - Do not include markdown formatting like \`\`\`json. Just return the raw JSON object.
             `;
+
 
             // Call Groq API
             const API_KEY = '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';
@@ -329,13 +379,15 @@ const LifeOS = {
             // Update State with Real Data
             const patterns = result.patterns || [];
             const recommendations = result.recommendations || [];
+            const overallRemarks = result.overallRemarks || null;
 
             // Store analysis
             this.analysisHistory.push({
                 timestamp: new Date().toISOString(),
                 context,
                 patterns,
-                recommendations
+                recommendations,
+                overallRemarks
             });
 
             this.lastAnalysis = new Date();
@@ -345,9 +397,9 @@ const LifeOS = {
             // Update UI
             this.updateLastAnalysis();
             this.updateStats();
-            this.renderRecommendations(recommendations);
+            this.renderRecommendations(recommendations, overallRemarks);
 
-            return { patterns, recommendations };
+            return { patterns, recommendations, overallRemarks };
 
         } catch (error) {
             console.error('Analysis failed:', error);
@@ -435,7 +487,8 @@ const LifeOS = {
         return recommendations;
     },
 
-    renderRecommendations(recommendations) {
+
+    renderRecommendations(recommendations, overallRemarks = null) {
         const container = document.getElementById('recommendations-container');
         if (!container) return;
 
@@ -444,9 +497,60 @@ const LifeOS = {
             return;
         }
 
-        container.innerHTML = recommendations.map(rec => {
+        let html = '';
+
+        // Add Overall Remarks section if available
+        if (overallRemarks) {
+            html += `
+            <div class="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl p-6 mb-6 border border-primary-200">
+                <h3 class="text-lg font-bold text-surface-900 mb-3 flex items-center gap-2">
+                    <i data-feather="message-circle" class="w-5 h-5 text-primary-600"></i>
+                    Overall Assessment
+                </h3>
+                <p class="text-surface-700 mb-4 leading-relaxed">${overallRemarks.summary || ''}</p>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    ${overallRemarks.strengths && overallRemarks.strengths.length > 0 ? `
+                    <div>
+                        <h4 class="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2 flex items-center gap-1">
+                            <i data-feather="check-circle" class="w-3 h-3"></i> Strengths
+                        </h4>
+                        <ul class="space-y-1">
+                            ${overallRemarks.strengths.map(s => `<li class="text-sm text-surface-600 flex items-start gap-2"><span class="text-emerald-500 mt-0.5">•</span><span>${s}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    ${overallRemarks.concerns && overallRemarks.concerns.length > 0 ? `
+                    <div>
+                        <h4 class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1">
+                            <i data-feather="alert-circle" class="w-3 h-3"></i> Areas to Address
+                        </h4>
+                        <ul class="space-y-1">
+                            ${overallRemarks.concerns.map(c => `<li class="text-sm text-surface-600 flex items-start gap-2"><span class="text-amber-500 mt-0.5">•</span><span>${c}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                ${overallRemarks.keyInsights && overallRemarks.keyInsights.length > 0 ? `
+                <div class="mt-4 pt-4 border-t border-primary-200">
+                    <h4 class="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-2 flex items-center gap-1">
+                        <i data-feather="lightbulb" class="w-3 h-3"></i> Key Insights
+                    </h4>
+                    <ul class="space-y-1">
+                        ${overallRemarks.keyInsights.map(i => `<li class="text-sm text-surface-600 flex items-start gap-2"><span class="text-primary-500 mt-0.5">→</span><span>${i}</span></li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            `;
+        }
+
+        // Add recommendations
+        html += recommendations.map(rec => {
             return `
-            <div class="recommendation-card bg-white rounded-xl p-6 shadow-sm border border-surface-200">
+            <div class="recommendation-card bg-white rounded-xl p-6 shadow-sm border border-surface-200 mb-4">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
                          <div class="text-${rec.category === 'alignment' ? 'primary' : 'secondary'}-600 bg-${rec.category === 'alignment' ? 'primary' : 'secondary'}-100 p-2 rounded-lg">
@@ -459,7 +563,25 @@ const LifeOS = {
                     </div>
                      <span class="px-3 py-1 bg-surface-100 text-surface-600 rounded-full text-xs font-medium">${rec.priority || 'Medium'} Priority</span>
                 </div>
-                <p class="text-surface-700 mb-6 leading-relaxed">${rec.action}</p>
+                <p class="text-surface-700 mb-4 leading-relaxed">${rec.action}</p>
+
+                ${rec.expectedOutcome ? `
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
+                    <h4 class="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <i data-feather="target" class="w-3 h-3"></i> Expected Outcome
+                    </h4>
+                    <p class="text-sm text-emerald-900">${rec.expectedOutcome}</p>
+                </div>
+                ` : ''}
+
+                ${rec.timeline ? `
+                <div class="bg-primary-50 border border-primary-200 rounded-lg p-3 mb-4">
+                    <h4 class="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <i data-feather="clock" class="w-3 h-3"></i> Timeline
+                    </h4>
+                    <p class="text-sm text-primary-900">${rec.timeline}</p>
+                </div>
+                ` : ''}
 
                 <div class="space-y-4">
                     <div>
@@ -483,6 +605,9 @@ const LifeOS = {
             </div>
            `;
         }).join('');
+
+        container.innerHTML = html;
+        if (window.feather) feather.replace();
     }
 };
 
@@ -495,7 +620,7 @@ LifeOS.init = function () {
     if (document.getElementById('recommendations-container') && this.analysisHistory.length > 0) {
         const lastrec = this.analysisHistory[this.analysisHistory.length - 1];
         if (lastrec && lastrec.recommendations) {
-            this.renderRecommendations(lastrec.recommendations);
+            this.renderRecommendations(lastrec.recommendations, lastrec.overallRemarks || null);
             // Verify context availability
             const contextInput = document.getElementById('current-context');
             if (contextInput && lastrec.context) {
