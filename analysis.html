@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History - LifeOS</title>
+    <link rel="icon" href="https://fav.farm/🧠">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e' },
+                        secondary: { 50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc', 400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf', 800: '#86198f', 900: '#701a75' },
+                        surface: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-surface-50 text-surface-900 font-sans antialiased">
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
+
+    <lifeos-navbar></lifeos-navbar>
+
+    <div class="flex min-h-screen pt-16">
+        <lifeos-sidebar></lifeos-sidebar>
+
+        <main class="flex-1 lg:ml-64 p-4 lg:p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-surface-900 mb-2">Analysis History</h1>
+                <p class="text-surface-500">Review past recommendations and reasoning logs.</p>
+            </div>
+
+            <div id="history-container" class="space-y-6">
+                <!-- History populated via script -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('history-container');
+            const history = LifeOS.analysisHistory.reverse(); // Newest first
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-xl border border-surface-200">
+                        <i data-feather="cpu" class="w-12 h-12 text-surface-300 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-surface-900">No Analysis Yet</h3>
+                        <p class="text-surface-500">Run your first analysis from the Dashboard.</p>
+                        <a href="index.html" class="inline-block mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">Go to Dashboard</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = history.map((entry, index) => `
+                    <div class="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
+                        <div class="p-4 bg-surface-50 border-b border-surface-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-sm font-semibold text-surface-700">Analysis #${history.length - index}</span>
+                                <span class="text-xs text-surface-500 ml-2">${new Date(entry.timestamp).toLocaleString()}</span>
+                            </div>
+                            <div class="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium">
+                                ${entry.recommendations ? entry.recommendations.length : 0} Recommendations
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="mb-4">
+                                <h4 class="text-xs uppercase tracking-wide text-surface-500 font-semibold mb-2">Context Provided</h4>
+                                <p class="text-surface-800 bg-surface-50 p-3 rounded-lg border border-surface-200 italic">"${entry.context || 'No specific context provided'}"</p>
+                            </div>
+                            
+                            <h4 class="text-xs uppercase tracking-wide text-surface-500 font-semibold mb-3">Recommendations</h4>
+                            <div class="space-y-4">
+                                ${(entry.recommendations || []).map(rec => `
+                                    <div class="pl-4 border-l-2 border-primary-300">
+                                        <h5 class="font-medium text-surface-900">${rec.title}</h5>
+                                        <p class="text-sm text-surface-600 mt-1">${rec.action}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            feather.replace();
+        });
+    </script>
+</body>
+
+</html>

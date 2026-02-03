@@ -1,0 +1,296 @@
+/* LifeOS - Global Styles */
+
+:root {
+    --primary-50: #f0f9ff;
+    --primary-100: #e0f2fe;
+    --primary-500: #0ea5e9;
+    --primary-600: #0284c7;
+    --primary-700: #0369a1;
+
+    --secondary-500: #d946ef;
+    --secondary-600: #c026d3;
+
+    --surface-50: #f8fafc;
+    --surface-100: #f1f5f9;
+    --surface-200: #e2e8f0;
+    --surface-300: #cbd5e1;
+    --surface-400: #94a3b8;
+    --surface-500: #64748b;
+    --surface-600: #475569;
+    --surface-700: #334155;
+    --surface-800: #1e293b;
+    --surface-900: #0f172a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--surface-300);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--surface-400);
+}
+
+/* Tab Transitions */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.tab-btn.active::after {
+    width: 80%;
+}
+
+/* Form Focus States */
+input:focus,
+select:focus,
+textarea:focus {
+    transform: translateY(-1px);
+}
+
+/* Card Hover Effects */
+.memory-card {
+    transition: all 0.2s ease;
+}
+
+.memory-card:hover {
+    transform: translateX(4px);
+}
+
+/* Reasoning Flow Animation */
+.reasoning-step {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: stepIn 0.4s ease forwards;
+}
+
+.reasoning-step:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.reasoning-step:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.reasoning-step:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+.reasoning-step:nth-child(4) {
+    animation-delay: 0.7s;
+}
+
+.reasoning-step:nth-child(5) {
+    animation-delay: 0.9s;
+}
+
+@keyframes stepIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse Animation for Active States */
+.pulse-ring {
+    position: relative;
+}
+
+.pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid currentColor;
+    animation: pulseRing 2s ease-out infinite;
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Shimmer Effect for Loading States */
+.shimmer {
+    background: linear-gradient(90deg, var(--surface-200) 25%, var(--surface-100) 50%, var(--surface-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glass Effect */
+.glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Dark Mode Adjustments */
+.dark .glass {
+    background: rgba(15, 23, 42, 0.8);
+}
+
+/* Memory Category Colors */
+.memory-routine {
+    border-left-color: var(--primary-500);
+}
+
+.memory-preference {
+    border-left-color: var(--secondary-500);
+}
+
+.memory-decision {
+    border-left-color: #d97706;
+}
+
+.memory-goal {
+    border-left-color: #059669;
+}
+
+.memory-constraint {
+    border-left-color: #e11d48;
+}
+
+/* Recommendation Card Styles */
+.recommendation-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.recommendation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary-500), var(--secondary-500));
+}
+
+/* Explanation Chain */
+.explanation-chain {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.explanation-chain::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--surface-200);
+}
+
+.explanation-link {
+    position: relative;
+}
+
+.explanation-link::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 0.5rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--primary-500);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .sidebar-collapsed {
+        transform: translateX(-100%);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus Visible for Keyboard Navigation */
+:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+/* Selection Color */
+::selection {
+    background: var(--primary-100);
+    color: var(--primary-900);
+}

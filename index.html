@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS - Personal Intelligence Layer</title>
+    <link rel="icon" href="https://fav.farm/🧠">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            800: '#86198f',
+                            900: '#701a75',
+                        },
+                        surface: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-surface-50 text-surface-900 font-sans antialiased transition-colors duration-300">
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
+    <script src="components/memory-card.js"></script>
+    <script src="components/recommendation-card.js"></script>
+    <script src="components/reasoning-flow.js"></script>
+
+    <lifeos-navbar></lifeos-navbar>
+
+    <div class="flex min-h-screen pt-16">
+        <lifeos-sidebar></lifeos-sidebar>
+
+        <main class="flex-1 lg:ml-64 p-4 lg:p-8">
+            <!-- Hero Section -->
+            <section class="mb-8">
+                <div
+                    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-secondary-600 p-8 lg:p-12">
+                    <div
+                        class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50">
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+                            <span class="text-primary-100 text-sm font-medium tracking-wide uppercase">System
+                                Active</span>
+                        </div>
+                        <h1 class="text-3xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                            Your Personal<br>
+                            <span
+                                class="text-transparent bg-clip-text bg-gradient-to-r from-primary-200 to-secondary-200">Intelligence
+                                Layer</span>
+                        </h1>
+                        <p class="text-primary-100 text-lg max-w-2xl mb-6">
+                            LifeOS observes, reasons, and recommends — turning your scattered life data into structured
+                            insights for better decisions.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button onclick="scrollToInput()"
+                                class="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-primary-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                <i data-feather="plus-circle" class="w-5 h-5"></i>
+                                Add Life Data
+                            </button>
+                            <button onclick="triggerAnalysis()"
+                                class="inline-flex items-center gap-2 px-6 py-3 bg-primary-700/50 text-white font-semibold rounded-xl hover:bg-primary-700/70 transition-all duration-200 backdrop-blur-sm border border-primary-400/30">
+                                <i data-feather="cpu" class="w-5 h-5"></i>
+                                Run Analysis
+                            </button>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-secondary-500/30 rounded-full blur-3xl">
+                    </div>
+                    <div class="absolute -top-20 -left-20 w-64 h-64 bg-primary-400/30 rounded-full blur-3xl"></div>
+                </div>
+            </section>
+
+            <!-- Quick Stats -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div
+                    class="bg-white rounded-xl p-6 shadow-sm border border-surface-200 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-surface-500 text-sm font-medium">Data Points</span>
+                        <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                            <i data-feather="database" class="w-5 h-5 text-primary-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-surface-900" id="stat-data-points">0</p>
+                    <p class="text-surface-500 text-sm mt-1">Across all categories</p>
+                </div>
+                <div
+                    class="bg-white rounded-xl p-6 shadow-sm border border-surface-200 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-surface-500 text-sm font-medium">Patterns Found</span>
+                        <div class="w-10 h-10 rounded-lg bg-secondary-100 flex items-center justify-center">
+                            <i data-feather="activity" class="w-5 h-5 text-secondary-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-surface-900" id="stat-patterns">0</p>
+                    <p class="text-surface-500 text-sm mt-1">Behavioral insights</p>
+                </div>
+                <div
+                    class="bg-white rounded-xl p-6 shadow-sm border border-surface-200 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-surface-500 text-sm font-medium">Recommendations</span>
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <i data-feather="lightbulb" class="w-5 h-5 text-amber-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-surface-900" id="stat-recommendations">0</p>
+                    <p class="text-surface-500 text-sm mt-1">Actionable insights</p>
+                </div>
+                <div
+                    class="bg-white rounded-xl p-6 shadow-sm border border-surface-200 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-surface-500 text-sm font-medium">Memory Age</span>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <i data-feather="clock" class="w-5 h-5 text-emerald-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-surface-900" id="stat-memory-age">0d</p>
+                    <p class="text-surface-500 text-sm mt-1">Since first input</p>
+                </div>
+            </section>
+
+            <!-- Main Content Grid -->
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Left Column: Input Forms -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Input Section -->
+                    <section id="input-section"
+                        class="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-surface-200 bg-surface-50/50">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
+                                        <i data-feather="edit-3" class="w-4 h-4 text-primary-600"></i>
+                                    </div>
+                                    <h2 class="font-semibold text-surface-900">Life Data Input</h2>
+                                </div>
+                                <span class="text-xs text-surface-500 bg-surface-100 px-2 py-1 rounded-full">Structured
+                                    Capture</span>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Category Tabs -->
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                <button onclick="switchTab('routine')" id="tab-routine"
+                                    class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-100 text-primary-700">
+                                    <i data-feather="repeat" class="w-4 h-4 inline mr-1"></i>
+                                    Routine
+                                </button>
+                                <button onclick="switchTab('preference')" id="tab-preference"
+                                    class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-surface-600 hover:bg-surface-100">
+                                    <i data-feather="heart" class="w-4 h-4 inline mr-1"></i>
+                                    Preference
+                                </button>
+                                <button onclick="switchTab('decision')" id="tab-decision"
+                                    class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-surface-600 hover:bg-surface-100">
+                                    <i data-feather="git-branch" class="w-4 h-4 inline mr-1"></i>
+                                    Decision
+                                </button>
+                                <button onclick="switchTab('goal')" id="tab-goal"
+                                    class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-surface-600 hover:bg-surface-100">
+                                    <i data-feather="target" class="w-4 h-4 inline mr-1"></i>
+                                    Goal
+                                </button>
+                                <button onclick="switchTab('constraint')" id="tab-constraint"
+                                    class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-surface-600 hover:bg-surface-100">
+                                    <i data-feather="shield" class="w-4 h-4 inline mr-1"></i>
+                                    Constraint
+                                </button>
+                            </div>
+
+                            <!-- Routine Form -->
+                            <form id="form-routine" class="input-form space-y-4">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Habit
+                                            Name</label>
+                                        <input type="text" name="name"
+                                            placeholder="e.g., Morning workout, Late night coding"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all"
+                                            required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Frequency</label>
+                                        <select name="frequency"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all bg-white">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="weekdays">Weekdays</option>
+                                            <option value="weekends">Weekends</option>
+                                            <option value="irregular">Irregular</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Typical
+                                            Time</label>
+                                        <input type="text" name="time" placeholder="e.g., 6:00 AM, 11:00 PM"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-surface-700 mb-2">Consistency</label>
+                                        <select name="consistency"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all bg-white">
+                                            <option value="consistent">Consistent</option>
+                                            <option value="mostly">Mostly consistent</option>
+                                            <option value="inconsistent">Inconsistent</option>
+                                            <option value="rarely">Rarely</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Notes
+                                        (Optional)</label>
+                                    <textarea name="notes" rows="2" placeholder="Additional context about this habit..."
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all resize-none"></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-feather="plus" class="w-4 h-4"></i>
+                                    Add to Memory
+                                </button>
+                            </form>
+
+                            <!-- Preference Form -->
+                            <form id="form-preference" class="input-form hidden space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Preference
+                                        Category</label>
+                                    <select name="category"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 outline-none transition-all bg-white">
+                                        <option value="productivity">Productivity Style</option>
+                                        <option value="learning">Learning Style</option>
+                                        <option value="social">Social Preference</option>
+                                        <option value="environment">Environment</option>
+                                        <option value="consumption">Consumption (Food/Media)</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">What You
+                                        Prefer</label>
+                                    <input type="text" name="preference"
+                                        placeholder="e.g., Deep work in mornings, Learning through videos"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 outline-none transition-all"
+                                        required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Strength of
+                                        Preference</label>
+                                    <div class="flex gap-4">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="strength" value="strong"
+                                                class="w-4 h-4 text-secondary-600">
+                                            <span class="text-sm text-surface-600">Strong</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="strength" value="moderate" checked
+                                                class="w-4 h-4 text-secondary-600">
+                                            <span class="text-sm text-surface-600">Moderate</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="strength" value="mild"
+                                                class="w-4 h-4 text-secondary-600">
+                                            <span class="text-sm text-surface-600">Mild</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-3 bg-secondary-600 text-white font-semibold rounded-lg hover:bg-secondary-700 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-feather="plus" class="w-4 h-4"></i>
+                                    Add to Memory
+                                </button>
+                            </form>
+
+                            <!-- Decision Form -->
+                            <form id="form-decision" class="input-form hidden space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Decision
+                                        Description</label>
+                                    <input type="text" name="description"
+                                        placeholder="e.g., Chose to skip workout for extra sleep"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
+                                        required>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Date</label>
+                                        <input type="date" name="date"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Perceived
+                                            Outcome</label>
+                                        <select name="outcome"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all bg-white">
+                                            <option value="positive">Positive</option>
+                                            <option value="neutral">Neutral</option>
+                                            <option value="negative">Negative</option>
+                                            <option value="unclear">Unclear</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">What You'd Do
+                                        Differently (Optional)</label>
+                                    <textarea name="reflection" rows="2" placeholder="Reflection on this decision..."
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all resize-none"></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-feather="plus" class="w-4 h-4"></i>
+                                    Add to Memory
+                                </button>
+                            </form>
+
+                            <!-- Goal Form -->
+                            <form id="form-goal" class="input-form hidden space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Goal
+                                        Statement</label>
+                                    <input type="text" name="statement"
+                                        placeholder="e.g., Improve fitness consistency, Learn Spanish"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                                        required>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Time
+                                            Horizon</label>
+                                        <select name="horizon"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white">
+                                            <option value="short">Short-term (1-4 weeks)</option>
+                                            <option value="medium">Medium-term (1-6 months)</option>
+                                            <option value="long">Long-term (6+ months)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-surface-700 mb-2">Priority</label>
+                                        <select name="priority"
+                                            class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white">
+                                            <option value="high">High</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="low">Low</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Current
+                                        Challenge</label>
+                                    <textarea name="challenge" rows="2" placeholder="What's making this goal difficult?"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-feather="plus" class="w-4 h-4"></i>
+                                    Add to Memory
+                                </button>
+                            </form>
+
+                            <!-- Constraint Form -->
+                            <form id="form-constraint" class="input-form hidden space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Constraint
+                                        Type</label>
+                                    <select name="type"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all bg-white">
+                                        <option value="time">Time Limitation</option>
+                                        <option value="energy">Energy/Health</option>
+                                        <option value="obligation">External Obligation</option>
+                                        <option value="resource">Resource Limitation</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Description</label>
+                                    <input type="text" name="description"
+                                        placeholder="e.g., College schedule 9-5, Limited evening energy"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
+                                        required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-surface-700 mb-2">Flexibility</label>
+                                    <select name="flexibility"
+                                        class="w-full px-4 py-2.5 rounded-lg border border-surface-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all bg-white">
+                                        <option value="fixed">Fixed (Cannot change)</option>
+                                        <option value="somewhat">Somewhat flexible</option>
+                                        <option value="flexible">Flexible</option>
+                                    </select>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-3 bg-rose-600 text-white font-semibold rounded-lg hover:bg-rose-700 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-feather="plus" class="w-4 h-4"></i>
+                                    Add to Memory
+                                </button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Reasoning Flow Visualization -->
+                    <lifeos-reasoning-flow id="reasoning-section" class="hidden"></lifeos-reasoning-flow>
+
+                    <!-- Recommendations -->
+                    <section id="recommendations-section" class="hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-semibold text-surface-900">AI Recommendations</h2>
+                            <span class="text-xs text-surface-500 bg-surface-100 px-3 py-1 rounded-full">Generated by
+                                Reasoning Agent</span>
+                        </div>
+                        <div id="recommendations-container" class="space-y-4">
+                            <!-- Recommendations injected here -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column: Memory & Context -->
+                <div class="space-y-6">
+                    <!-- Structured Memory Profile -->
+                    <section class="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-surface-200 bg-surface-50/50">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-secondary-100 flex items-center justify-center">
+                                        <i data-feather="layers" class="w-4 h-4 text-secondary-600"></i>
+                                    </div>
+                                    <h2 class="font-semibold text-surface-900">Memory Seed</h2>
+                                </div>
+                                <button onclick="clearMemory()"
+                                    class="text-xs text-surface-500 hover:text-rose-600 transition-colors">
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-4" id="memory-container">
+                            <div class="text-center py-8 text-surface-400">
+                                <i data-feather="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                                <p class="text-sm">No data in memory yet.<br>Add your first life data above.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Current Context -->
+                    <section class="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-surface-200 bg-surface-50/50">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                    <i data-feather="compass" class="w-4 h-4 text-amber-600"></i>
+                                </div>
+                                <h2 class="font-semibold text-surface-900">Current Context</h2>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <textarea id="current-context" rows="4"
+                                placeholder="Describe a current problem, goal, or dilemma you want help with..."
+                                class="w-full px-4 py-3 rounded-lg border border-surface-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all resize-none text-sm"></textarea>
+                            <p class="text-xs text-surface-500 mt-2">
+                                This context will be used by the reasoning agent to generate personalized
+                                recommendations.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- System Status -->
+                    <section class="bg-surface-900 rounded-xl p-6 text-white">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            <span class="text-sm font-medium text-surface-300">System Status</span>
+                        </div>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-surface-400">Reasoning Engine</span>
+                                <span class="text-green-400">Active</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-surface-400">Memory System</span>
+                                <span class="text-green-400">Connected</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-surface-400">Explanation Layer</span>
+                                <span class="text-green-400">Ready</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-surface-400">Last Analysis</span>
+                                <span class="text-surface-300" id="last-analysis">Never</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-surface-700">
+                            <p class="text-xs text-surface-500">
+                                All processing happens locally. Your data never leaves this device.
+                            </p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>feather.replace();</script>
+</body>
+
+</html>

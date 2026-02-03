@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - LifeOS</title>
+    <link rel="icon" href="https://fav.farm/🧠">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e' },
+                        secondary: { 50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc', 400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf', 800: '#86198f', 900: '#701a75' },
+                        surface: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-surface-50 text-surface-900 font-sans antialiased">
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
+
+    <lifeos-navbar></lifeos-navbar>
+
+    <div class="flex min-h-screen pt-16">
+        <lifeos-sidebar></lifeos-sidebar>
+
+        <main class="flex-1 lg:ml-64 p-4 lg:p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-surface-900 mb-2">Settings</h1>
+                <p class="text-surface-500">Configure your Personal Intelligence Layer.</p>
+            </div>
+
+            <div class="max-w-2xl space-y-6">
+                <!-- API Configuration -->
+                <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+                    <h2 class="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
+                        <i data-feather="key" class="w-5 h-5 text-primary-600"></i>
+                        API Configuration
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-surface-700 mb-2">Gemini API Key</label>
+                            <input type="password" value="************************" disabled
+                                class="w-full px-4 py-2 bg-surface-50 border border-surface-300 rounded-lg text-surface-500 cursor-not-allowed">
+                            <p class="text-xs text-surface-500 mt-1">Configured in system.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+                    <h2 class="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
+                        <i data-feather="database" class="w-5 h-5 text-rose-600"></i>
+                        Data Management
+                    </h2>
+                    <p class="text-sm text-surface-600 mb-4">
+                        LifeOS stores all data locally in your browser. Clearing data is irreversible.
+                    </p>
+                    <div class="flex gap-4">
+                        <button onclick="LifeOS.clear(); alert('Data cleared!');"
+                            class="px-4 py-2 border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 font-medium transition-colors">
+                            Clear Memory
+                        </button>
+                        <button onclick="localStorage.removeItem('lifeos_history'); window.location.reload();"
+                            class="px-4 py-2 border border-surface-300 text-surface-600 rounded-lg hover:bg-surface-50 font-medium transition-colors">
+                            Clear History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+                    <h2 class="text-lg font-semibold text-surface-900 mb-2">About LifeOS</h2>
+                    <p class="text-sm text-surface-600 mb-4">
+                        Version 1.0.0 (Prototype)
+                    </p>
+                    <div class="text-xs text-surface-400">
+                        <p>Powered by Google Gemini</p>
+                        <p>Local-first Architecture</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>feather.replace();</script>
+</body>
+
+</html>
