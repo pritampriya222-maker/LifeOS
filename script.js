@@ -530,48 +530,51 @@ window.clearMemory = () => {
 };
 
 document.querySelectorAll('form').forEach(form => {
-    if (form.getAttribute('data-submitting') === 'true') return;
-    form.setAttribute('data-submitting', 'true');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    const btn = form.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<i class="animate-spin" data-feather="loader"></i> Saving...`;
-    if (window.feather) feather.replace();
+        if (form.getAttribute('data-submitting') === 'true') return;
+        form.setAttribute('data-submitting', 'true');
 
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-
-    const categoryMap = {
-        'routine': 'habits',
-        'preference': 'preferences',
-        'decision': 'decisions',
-        'goal': 'goals',
-        'constraint': 'constraints'
-    };
-    const actualCategory = categoryMap[form.id.replace('form-', '')];
-
-    // Simulate small network delay for UX stability
-    setTimeout(() => {
-        LifeOS.add(actualCategory, data);
-        form.reset();
-
-        btn.innerHTML = `<i data-feather="check" class="w-4 h-4"></i> Saved`;
-        btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white');
-        btn.classList.remove('bg-primary-600', 'hover:bg-primary-700'); // Assuming primary is default, adjust if varies
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="animate-spin" data-feather="loader"></i> Saving...`;
         if (window.feather) feather.replace();
 
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        const categoryMap = {
+            'routine': 'habits',
+            'preference': 'preferences',
+            'decision': 'decisions',
+            'goal': 'goals',
+            'constraint': 'constraints'
+        };
+        const actualCategory = categoryMap[form.id.replace('form-', '')];
+
+        // Simulate small network delay for UX stability
         setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-            // Restore original classes roughly (simplified)
-            btn.disabled = false;
-            form.removeAttribute('data-submitting');
+            LifeOS.add(actualCategory, data);
+            form.reset();
+
+            btn.innerHTML = `<i data-feather="check" class="w-4 h-4"></i> Saved`;
+            btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white');
+            btn.classList.remove('bg-primary-600', 'hover:bg-primary-700');
             if (window.feather) feather.replace();
-        }, 2000);
-    }, 300); // 300ms aesthetic delay
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white');
+                btn.disabled = false;
+                form.removeAttribute('data-submitting');
+                if (window.feather) feather.replace();
+            }, 2000);
+        }, 300);
+    });
 });
-});
+
 
 document.addEventListener('DOMContentLoaded', () => {
     LifeOS.init();
