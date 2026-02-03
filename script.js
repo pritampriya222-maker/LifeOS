@@ -433,12 +433,14 @@ const LifeOS = {
     renderRecommendations(recommendations) {
         const container = document.getElementById('recommendations-container');
         if (!container) return;
-        container.innerHTML = '<p class="text-surface-500 text-sm">No specific recommendations generated yet. Try adding more data.</p>';
-        return;
-    }
+
+        if (!recommendations || recommendations.length === 0) {
+            container.innerHTML = '<p class="text-surface-500 text-sm">No specific recommendations generated yet. Try adding more data.</p>';
+            return;
+        }
 
         container.innerHTML = recommendations.map(rec => {
-        return `
+            return `
             <div class="recommendation-card bg-white rounded-xl p-6 shadow-sm border border-surface-200">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
@@ -447,10 +449,10 @@ const LifeOS = {
                          </div>
                          <div>
                             <h3 class="font-semibold text-surface-900">${rec.title}</h3>
-                            <span class="text-xs uppercase tracking-wider text-surface-500 font-medium">${rec.category.replace('_', ' ')}</span>
+                            <span class="text-xs uppercase tracking-wider text-surface-500 font-medium">${(rec.category || 'General').replace('_', ' ')}</span>
                          </div>
                     </div>
-                     <span class="px-3 py-1 bg-surface-100 text-surface-600 rounded-full text-xs font-medium">${rec.priority} Priority</span>
+                     <span class="px-3 py-1 bg-surface-100 text-surface-600 rounded-full text-xs font-medium">${rec.priority || 'Medium'} Priority</span>
                 </div>
                 <p class="text-surface-700 mb-6 leading-relaxed">${rec.action}</p>
 
@@ -460,7 +462,7 @@ const LifeOS = {
                             <i data-feather="git-pull-request" class="w-3 h-3"></i> Reasoning
                         </h4>
                         <ul class="explanation-chain space-y-3">
-                            ${rec.reasoning.map(r => `<li class="text-sm text-surface-600 explanation-link">${r}</li>`).join('')}
+                            ${(rec.reasoning || []).map(r => `<li class="text-sm text-surface-600 explanation-link">${r}</li>`).join('')}
                         </ul>
                     </div>
 
@@ -468,64 +470,107 @@ const LifeOS = {
                          <div class="flex-1">
                              <h4 class="text-xs font-semibold text-surface-900 uppercase tracking-wide mb-2">Trade-offs</h4>
                              <ul class="list-disc list-inside space-y-1">
-                                ${rec.tradeOffs.map(t => `<li class="text-xs text-surface-500">${t}</li>`).join('')}
+                                ${(rec.tradeOffs || []).map(t => `<li class="text-xs text-surface-500">${t}</li>`).join('')}
                              </ul>
                          </div>
                     </div>
                 </div>
             </div>
            `;
-    }).join('');
-    feather.replace();
-}
+        }).join('');
+    }
 };
 
-window.scrollToInput = () => document.getElementById('input-section').scrollIntoView({ behavior: 'smooth' });
+// Auto-restore state on load
+const originalInit = LifeOS.init;
+LifeOS.init = function () {
+    originalInit.call(this);
+
+    // Restore recommendations if on dashboard
+    if (document.getElementById('recommendations-container') && this.analysisHistory.length > 0) {
+        const lastrec = this.analysisHistory[this.analysisHistory.length - 1];
+        if (lastrec && lastrec.recommendations) {
+            this.renderRecommendations(lastrec.recommendations);
+            // Verify context availability
+            const contextInput = document.getElementById('current-context');
+            if (contextInput && lastrec.context) {
+                contextInput.value = lastrec.context;
+            }
+        }
+    }
+};
+
+window.scrollToInput = () => {
+    const section = document.getElementById('input-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth' });
+};
 window.switchTab = (tab) => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'bg-primary-100', 'text-primary-700'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('text-surface-600', 'hover:bg-surface-100'));
+    const btns = document.querySelectorAll('.tab-btn');
+    if (btns.length === 0) return;
+
+    btns.forEach(b => b.classList.remove('active', 'bg-primary-100', 'text-primary-700'));
+    btns.forEach(b => b.classList.add('text-surface-600', 'hover:bg-surface-100'));
 
     const btn = document.getElementById(`tab-${tab}`);
-    btn.classList.add('active', 'bg-primary-100', 'text-primary-700');
-    btn.classList.remove('text-surface-600', 'hover:bg-surface-100');
+    if (btn) {
+        btn.classList.add('active', 'bg-primary-100', 'text-primary-700');
+        btn.classList.remove('text-surface-600', 'hover:bg-surface-100');
+    }
 
     document.querySelectorAll('.input-form').forEach(f => f.classList.add('hidden'));
-    document.getElementById(`form-${tab}`).classList.remove('hidden');
+    const form = document.getElementById(`form-${tab}`);
+    if (form) form.classList.remove('hidden');
 };
 
-window.triggerAnalysis = () => LifeOS.analyze();
+window.triggerAnalysis = () => {
+    if (LifeOS && typeof LifeOS.analyze === 'function') LifeOS.analyze();
+};
 window.clearMemory = () => {
     if (confirm('Are you sure? This will wipe all data.')) LifeOS.clear();
 };
 
 document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+    if (form.getAttribute('data-submitting') === 'true') return;
+    form.setAttribute('data-submitting', 'true');
 
-        const categoryMap = {
-            'routine': 'habits',
-            'preference': 'preferences',
-            'decision': 'decisions',
-            'goal': 'goals',
-            'constraint': 'constraints'
-        };
-        const actualCategory = categoryMap[form.id.replace('form-', '')];
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="animate-spin" data-feather="loader"></i> Saving...`;
+    if (window.feather) feather.replace();
 
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    const categoryMap = {
+        'routine': 'habits',
+        'preference': 'preferences',
+        'decision': 'decisions',
+        'goal': 'goals',
+        'constraint': 'constraints'
+    };
+    const actualCategory = categoryMap[form.id.replace('form-', '')];
+
+    // Simulate small network delay for UX stability
+    setTimeout(() => {
         LifeOS.add(actualCategory, data);
         form.reset();
 
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerHTML;
         btn.innerHTML = `<i data-feather="check" class="w-4 h-4"></i> Saved`;
-        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+        btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white');
+        btn.classList.remove('bg-primary-600', 'hover:bg-primary-700'); // Assuming primary is default, adjust if varies
+        if (window.feather) feather.replace();
+
         setTimeout(() => {
             btn.innerHTML = originalText;
             btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-            feather.replace();
+            // Restore original classes roughly (simplified)
+            btn.disabled = false;
+            form.removeAttribute('data-submitting');
+            if (window.feather) feather.replace();
         }, 2000);
-    });
+    }, 300); // 300ms aesthetic delay
+});
 });
 
 document.addEventListener('DOMContentLoaded', () => {
