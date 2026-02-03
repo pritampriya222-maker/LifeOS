@@ -1,0 +1,520 @@
+class GoalTracker extends HTMLElement {
+    constructor() {
+        super();
+        this.isOpen = false;
+        this.currentDate = new Date();
+        this.goalData = this.loadGoalData();
+    }
+
+    connectedCallback() {
+        this.render();
+        this.attachEventListeners();
+    }
+
+    loadGoalData() {
+        const saved = localStorage.getItem('lifeos_goal_tracker');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return {};
+    }
+
+    saveGoalData() {
+        localStorage.setItem('lifeos_goal_tracker', JSON.stringify(this.goalData));
+    }
+
+    getDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    addGoalToDate(date, goal) {
+        const key = this.getDateKey(date);
+        if (!this.goalData[key]) {
+            this.goalData[key] = [];
+        }
+        this.goalData[key].push({
+            id: Date.now(),
+            text: goal,
+            completed: false,
+            createdAt: new Date().toISOString()
+        });
+        this.saveGoalData();
+        this.renderCalendar();
+    }
+
+    toggleGoalCompletion(dateKey, goalId) {
+        if (this.goalData[dateKey]) {
+            const goal = this.goalData[dateKey].find(g => g.id === goalId);
+            if (goal) {
+                goal.completed = !goal.completed;
+                this.saveGoalData();
+                this.renderCalendar();
+            }
+        }
+    }
+
+    deleteGoal(dateKey, goalId) {
+        if (this.goalData[dateKey]) {
+            this.goalData[dateKey] = this.goalData[dateKey].filter(g => g.id !== goalId);
+            if (this.goalData[dateKey].length === 0) {
+                delete this.goalData[dateKey];
+            }
+            this.saveGoalData();
+            this.renderCalendar();
+        }
+    }
+
+    getDaysInMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    }
+
+    getFirstDayOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    }
+
+    changeMonth(offset) {
+        this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + offset, 1);
+        this.renderCalendar();
+    }
+
+    renderCalendar() {
+        const calendarContainer = this.querySelector('.calendar-grid');
+        if (!calendarContainer) return;
+
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
+        const firstDay = this.getFirstDayOfMonth(this.currentDate);
+        const today = new Date();
+        const todayKey = this.getDateKey(today);
+
+        let html = '';
+
+        // Day headers
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        dayNames.forEach(day => {
+            html += `<div class="calendar-day-header">${day}</div>`;
+        });
+
+        // Empty cells before first day
+        for (let i = 0; i < firstDay; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+        }
+
+        // Days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+            const dateKey = this.getDateKey(date);
+            const goals = this.goalData[dateKey] || [];
+            const isToday = dateKey === todayKey;
+            const hasGoals = goals.length > 0;
+            const completedCount = goals.filter(g => g.completed).length;
+            const totalCount = goals.length;
+            const allCompleted = hasGoals && completedCount === totalCount;
+
+            html += `
+                <div class="calendar-day ${isToday ? 'today' : ''} ${hasGoals ? 'has-goals' : ''} ${allCompleted ? 'all-completed' : ''}" 
+                     data-date="${dateKey}">
+                    <span class="day-number">${day}</span>
+                    ${hasGoals ? `
+                        <div class="goal-indicator">
+                            <span class="goal-count">${completedCount}/${totalCount}</span>
+                        </div>
+                        <div class="goal-tooltip">
+                            <div class="tooltip-header">
+                                <strong>${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                            </div>
+                            <div class="tooltip-goals">
+                                ${goals.map(goal => `
+                                    <div class="tooltip-goal ${goal.completed ? 'completed' : ''}">
+                                        <input type="checkbox" 
+                                               ${goal.completed ? 'checked' : ''} 
+                                               onchange="document.querySelector('goal-tracker').toggleGoalCompletion('${dateKey}', ${goal.id})"
+                                               onclick="event.stopPropagation()">
+                                        <span>${goal.text}</span>
+                                        <button class="delete-goal" 
+                                                onclick="event.stopPropagation(); document.querySelector('goal-tracker').deleteGoal('${dateKey}', ${goal.id})"
+                                                title="Delete">×</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="add-goal-btn" onclick="document.querySelector('goal-tracker').showAddGoalForm('${dateKey}')">
+                                + Add Goal
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="goal-tooltip">
+                            <div class="tooltip-header">
+                                <strong>${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                            </div>
+                            <p class="text-xs text-surface-500 mb-2">No goals for this day</p>
+                            <button class="add-goal-btn" onclick="document.querySelector('goal-tracker').showAddGoalForm('${dateKey}')">
+                                + Add Goal
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        calendarContainer.innerHTML = html;
+
+        // Update month/year display
+        const monthYear = this.querySelector('.month-year');
+        if (monthYear) {
+            monthYear.textContent = this.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+    }
+
+    showAddGoalForm(dateKey) {
+        const goalText = prompt('Enter goal for this date:');
+        if (goalText && goalText.trim()) {
+            const [year, month, day] = dateKey.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            this.addGoalToDate(date, goalText.trim());
+        }
+    }
+
+    toggleTracker() {
+        this.isOpen = !this.isOpen;
+        const panel = this.querySelector('.tracker-panel');
+        const fab = this.querySelector('.tracker-fab');
+
+        if (this.isOpen) {
+            panel.classList.add('open');
+            fab.classList.add('open');
+        } else {
+            panel.classList.remove('open');
+            fab.classList.remove('open');
+        }
+    }
+
+    attachEventListeners() {
+        const fab = this.querySelector('.tracker-fab');
+        const prevBtn = this.querySelector('.prev-month');
+        const nextBtn = this.querySelector('.next-month');
+
+        fab?.addEventListener('click', () => this.toggleTracker());
+        prevBtn?.addEventListener('click', () => this.changeMonth(-1));
+        nextBtn?.addEventListener('click', () => this.changeMonth(1));
+    }
+
+    render() {
+        this.innerHTML = `
+            <style>
+                .tracker-fab {
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #0ea5e9 0%, #d946ef 100%);
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                    z-index: 999;
+                }
+
+                .tracker-fab:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+                }
+
+                .tracker-fab.open {
+                    background: linear-gradient(135deg, #d946ef 0%, #0ea5e9 100%);
+                }
+
+                .tracker-fab svg {
+                    width: 28px;
+                    height: 28px;
+                }
+
+                .tracker-panel {
+                    position: fixed;
+                    bottom: 96px;
+                    right: 24px;
+                    width: 420px;
+                    max-height: 600px;
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.95);
+                    pointer-events: none;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 998;
+                    overflow: hidden;
+                }
+
+                .tracker-panel.open {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                    pointer-events: all;
+                }
+
+                .tracker-header {
+                    padding: 20px;
+                    background: linear-gradient(135deg, #0ea5e9 0%, #d946ef 100%);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .tracker-header h3 {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: 600;
+                }
+
+                .month-nav {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .month-year {
+                    font-size: 14px;
+                    font-weight: 500;
+                    min-width: 140px;
+                    text-align: center;
+                }
+
+                .nav-btn {
+                    background: rgba(255, 255, 255, 0.2);
+                    border: none;
+                    color: white;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background 0.2s;
+                }
+
+                .nav-btn:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                }
+
+                .tracker-body {
+                    padding: 16px;
+                    max-height: 500px;
+                    overflow-y: auto;
+                }
+
+                .calendar-grid {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 4px;
+                }
+
+                .calendar-day-header {
+                    text-align: center;
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #64748b;
+                    padding: 8px 4px;
+                    text-transform: uppercase;
+                }
+
+                .calendar-day {
+                    aspect-ratio: 1;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 4px;
+                    cursor: pointer;
+                    position: relative;
+                    transition: all 0.2s;
+                    background: white;
+                }
+
+                .calendar-day.empty {
+                    border: none;
+                    cursor: default;
+                }
+
+                .calendar-day:not(.empty):hover {
+                    border-color: #0ea5e9;
+                    background: #f0f9ff;
+                    transform: scale(1.05);
+                    z-index: 10;
+                }
+
+                .calendar-day.today {
+                    border-color: #0ea5e9;
+                    background: #e0f2fe;
+                }
+
+                .calendar-day.has-goals {
+                    border-color: #d946ef;
+                    background: #fdf4ff;
+                }
+
+                .calendar-day.all-completed {
+                    border-color: #10b981;
+                    background: #d1fae5;
+                }
+
+                .day-number {
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #1e293b;
+                    display: block;
+                    text-align: center;
+                }
+
+                .goal-indicator {
+                    position: absolute;
+                    bottom: 2px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 9px;
+                    color: #d946ef;
+                    font-weight: 600;
+                }
+
+                .calendar-day.all-completed .goal-indicator {
+                    color: #10b981;
+                }
+
+                .goal-tooltip {
+                    position: absolute;
+                    bottom: calc(100% + 8px);
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 12px;
+                    min-width: 200px;
+                    max-width: 280px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.2s;
+                    z-index: 100;
+                }
+
+                .calendar-day:hover .goal-tooltip {
+                    opacity: 1;
+                    pointer-events: all;
+                }
+
+                .tooltip-header {
+                    margin-bottom: 8px;
+                    padding-bottom: 8px;
+                    border-bottom: 1px solid #e2e8f0;
+                    font-size: 13px;
+                    color: #1e293b;
+                }
+
+                .tooltip-goals {
+                    margin-bottom: 8px;
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+
+                .tooltip-goal {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 6px 0;
+                    font-size: 12px;
+                    color: #475569;
+                }
+
+                .tooltip-goal.completed {
+                    opacity: 0.6;
+                }
+
+                .tooltip-goal.completed span {
+                    text-decoration: line-through;
+                }
+
+                .tooltip-goal input[type="checkbox"] {
+                    cursor: pointer;
+                    flex-shrink: 0;
+                }
+
+                .tooltip-goal span {
+                    flex: 1;
+                }
+
+                .delete-goal {
+                    background: none;
+                    border: none;
+                    color: #ef4444;
+                    font-size: 18px;
+                    cursor: pointer;
+                    padding: 0;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                    flex-shrink: 0;
+                }
+
+                .delete-goal:hover {
+                    background: #fee2e2;
+                }
+
+                .add-goal-btn {
+                    width: 100%;
+                    padding: 6px 12px;
+                    background: linear-gradient(135deg, #0ea5e9 0%, #d946ef 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: opacity 0.2s;
+                }
+
+                .add-goal-btn:hover {
+                    opacity: 0.9;
+                }
+
+                @media (max-width: 640px) {
+                    .tracker-panel {
+                        width: calc(100vw - 48px);
+                        right: 24px;
+                    }
+                }
+            </style>
+
+            <button class="tracker-fab" title="Goal Tracker">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </button>
+
+            <div class="tracker-panel">
+                <div class="tracker-header">
+                    <h3>Goal Tracker</h3>
+                    <div class="month-nav">
+                        <button class="nav-btn prev-month">‹</button>
+                        <span class="month-year"></span>
+                        <button class="nav-btn next-month">›</button>
+                    </div>
+                </div>
+                <div class="tracker-body">
+                    <div class="calendar-grid"></div>
+                </div>
+            </div>
+        `;
+
+        this.renderCalendar();
+    }
+}
+
+customElements.define('goal-tracker', GoalTracker);
