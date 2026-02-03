@@ -303,7 +303,8 @@ const LifeOS = {
 
             // Call Gemini API (Direct fetch for immediate usage)
             const API_KEY = 'AIzaSyDtgh9EiM-vA9-F9SWNnF6Mgu9YcQNz6gg';
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+            // Using gemini-1.5-flash-001 or gemini-pro if the alias is unstable
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
